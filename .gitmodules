@@ -1,0 +1,3 @@
+[submodule "razter"]
+	path = razter
+	url = https://github.com/sharhar/razter.git
