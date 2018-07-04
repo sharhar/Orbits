@@ -10,6 +10,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 include_directories(
 	"${CMAKE_SOURCE_DIR}/razter/include"
+	"${CMAKE_SOURCE_DIR}/razter/VKL/include"
 )
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/razter")
