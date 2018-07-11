@@ -16,7 +16,8 @@ int main() {
 	RZContext* ctx = rzCreateContext(api);
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Razter Test", NULL, NULL);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    GLFWwindow* window = glfwCreateWindow(800, 800, "Orbits", NULL, NULL);
 
 	RZDevice* device;
 	RZCommandQueue** queues;
@@ -30,13 +31,13 @@ int main() {
 	RZFrameBuffer* backBuffer = ctx->getBackBuffer(swapChain);
 
 	float verts[] = {
-		-0.5f, -0.5f, 0.0f, 1.0f,
-		0.5f,  0.5f, 1.0f, 0.0f,
+		-0.5f, -0.5f, -1.0f, 1.0f,
+		0.5f,  0.5f, 1.0f, -1.0f,
 		0.5f, -0.5f, 1.0f, 1.0f,
 
-		-0.5f, -0.5f, 0.0f, 1.0f,
-		0.5f,  0.5f, 1.0f, 0.0f,
-		-0.5f,  0.5f, 0.0f, 0.0f
+		-0.5f, -0.5f, -1.0f, 1.0f,
+		0.5f,  0.5f, 1.0f, -1.0f,
+		-0.5f,  0.5f, -1.0f, -1.0f
 	};
 
 	size_t offsets[] = { 0, sizeof(float) * 2 };
@@ -56,18 +57,12 @@ int main() {
 
 	RZBuffer* buffer = ctx->allocBuffer(device, queue, &bufferCreateInfo, verts, sizeof(float) * 6 * 4);
 
-	RZUniformDescriptor uniformDescriptors[2];
+	RZUniformDescriptor uniformDescriptors[1];
 	uniformDescriptors[0].index = 1;
 	uniformDescriptors[0].name = "view";
 	uniformDescriptors[0].stage = RZ_UNIFORM_STAGE_VERTEX;
 	uniformDescriptors[0].type = RZ_UNIFORM_TYPE_BUFFER;
 	uniformDescriptors[0].bufferSize = sizeof(float) * 32;
-
-	uniformDescriptors[1].index = 0;
-	uniformDescriptors[1].name = "tex";
-	uniformDescriptors[1].stage = RZ_UNIFORM_STAGE_FRAGMENT;
-	uniformDescriptors[1].type = RZ_UNIFORM_TYPE_SAMPLED_IMAGE;
-	uniformDescriptors[1].bufferSize = 0;
 
 	RZShaderCreateInfo shaderCreateInfo;
 	shaderCreateInfo.isPath = RZ_TRUE;
@@ -75,11 +70,11 @@ int main() {
 	shaderCreateInfo.vertSize = 0;
 	shaderCreateInfo.fragSize = 0;
 	shaderCreateInfo.descriptors = uniformDescriptors;
-	shaderCreateInfo.descriptorCount = 3;
+	shaderCreateInfo.descriptorCount = 1;
 	shaderCreateInfo.frameBuffer = backBuffer;
 
-	shaderCreateInfo.vertData = "res/shader-vert-2.spv";
-	shaderCreateInfo.fragData = "res/shader-frag-2.spv";
+	shaderCreateInfo.vertData = "res/orbit-vert.spv";
+	shaderCreateInfo.fragData = "res/orbit-frag.spv";
 
 #ifdef __APPLE__
 	shaderCreateInfo.vertFunction = "vertex_function";
@@ -94,9 +89,9 @@ int main() {
 	RZUniform* uniform = ctx->createUniform(device, shader);
 
 	float view[] = {
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
+		2, 0, 0, 0,
+		0, 2, 0, 0,
+		0, 0, 2, 0,
 		0, 0, 0, 1,
 
 		1, 0, 0, 0,
@@ -107,25 +102,6 @@ int main() {
 
 	ctx->uniformData(device, uniform, 0, view);
 	
-	float imageData[] = {
-		1.0f, 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.3f, 0.3f, 1.0f,    0.3f, 1.0f, 0.3f, 1.0f,   0.3f, 0.3f, 1.0f, 1.0f,    0.3f, 0.3f, 0.3f, 1.0f,
-		1.0f, 0.5f, 0.5f, 1.0f,    0.5f, 1.0f, 0.5f, 1.0f,   0.5f, 0.5f, 1.0f, 1.0f,    0.5f, 0.5f, 0.5f, 1.0f,
-		1.0f, 0.8f, 0.8f, 1.0f,    0.8f, 1.0f, 0.8f, 1.0f,   0.8f, 0.8f, 1.0f, 1.0f,    0.8f, 0.8f, 0.8f, 1.0f
-	};
-
-	RZTextureCreateInfo textureCreateInfo;
-	textureCreateInfo.width = 4;
-	textureCreateInfo.height = 4;
-	textureCreateInfo.data = imageData;
-	textureCreateInfo.componentsPerPixel = 4;
-	textureCreateInfo.bytesPerComponent = sizeof(float);
-	textureCreateInfo.componentType = RZ_COMPONENT_TYPE_FLOAT_32;
-
-	RZTexture* texture = ctx->createTexture(device, queue, &textureCreateInfo);
-
-	ctx->uniformData(device, uniform, 1, texture);
-
 	RZCommandBuffer* cmdBuffer = ctx->createCommandBuffer(device, queue);
 
 	double ct = glfwGetTime();
@@ -151,7 +127,7 @@ int main() {
 			accDT = 0;
 		}
 
-		view[12] = glfwGetTime() / 10.0f;
+		//view[12] = glfwGetTime() / 10.0f;
 		ctx->uniformData(device, uniform, 0, view);
 
 		ctx->startCommandBuffer(device, queue, cmdBuffer);
