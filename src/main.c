@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <razter/razter.h>
+#include <math.h>
 
 int main() {
 	if (!glfwInit()) {
@@ -57,12 +58,18 @@ int main() {
 
 	RZBuffer* buffer = ctx->allocBuffer(device, queue, &bufferCreateInfo, verts, sizeof(float) * 6 * 4);
 
-	RZUniformDescriptor uniformDescriptors[1];
+	RZUniformDescriptor uniformDescriptors[2];
 	uniformDescriptors[0].index = 1;
-	uniformDescriptors[0].name = "view";
+	uniformDescriptors[0].name = "TRANS";
 	uniformDescriptors[0].stage = RZ_UNIFORM_STAGE_VERTEX;
 	uniformDescriptors[0].type = RZ_UNIFORM_TYPE_BUFFER;
-	uniformDescriptors[0].bufferSize = sizeof(float) * 32;
+	uniformDescriptors[0].bufferSize = sizeof(float) * 33;
+
+	uniformDescriptors[1].index = 2;
+	uniformDescriptors[1].name = "bg";
+	uniformDescriptors[1].stage = RZ_UNIFORM_STAGE_FRAGMENT;
+	uniformDescriptors[1].type = RZ_UNIFORM_TYPE_BUFFER;
+	uniformDescriptors[1].bufferSize = sizeof(float) * 3;
 
 	RZShaderCreateInfo shaderCreateInfo;
 	shaderCreateInfo.isPath = RZ_TRUE;
@@ -70,7 +77,7 @@ int main() {
 	shaderCreateInfo.vertSize = 0;
 	shaderCreateInfo.fragSize = 0;
 	shaderCreateInfo.descriptors = uniformDescriptors;
-	shaderCreateInfo.descriptorCount = 1;
+	shaderCreateInfo.descriptorCount = 2;
 	shaderCreateInfo.frameBuffer = backBuffer;
 
 	shaderCreateInfo.vertData = "res/orbit-vert.spv";
@@ -97,10 +104,16 @@ int main() {
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
-		0, 0, 0, 1
+		0, 0, 0, 1,
+
+		1
 	};
 
 	ctx->uniformData(device, uniform, 0, view);
+
+	float bgColor[] = {0, 0, 0};
+
+	ctx->uniformData(device, uniform, 1, bgColor);
 	
 	RZCommandBuffer* cmdBuffer = ctx->createCommandBuffer(device, queue);
 
@@ -127,7 +140,7 @@ int main() {
 			accDT = 0;
 		}
 
-		//view[12] = glfwGetTime() / 10.0f;
+		view[32] = 40;// glfwGetTime() / 2.0f;
 		ctx->uniformData(device, uniform, 0, view);
 
 		ctx->startCommandBuffer(device, queue, cmdBuffer);
